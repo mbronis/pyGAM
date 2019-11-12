@@ -1,5 +1,5 @@
 
-# https://pygam.readthedocs.io/en/latest/notebooks/quick_start.html#Fit-a-Model
+# https://pygam.readthedocs.io/en/latest/notebooks/quick_start.html
 
 from pygam.datasets import wage
 
