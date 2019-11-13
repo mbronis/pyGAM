@@ -11,36 +11,20 @@ from sklearn.datasets import load_breast_cancer
 data = load_breast_cancer()
 
 #keep first 6 features only
-df = pd.DataFrame(data.data, columns=data.feature_names)[['mean radius', 'mean texture', 'mean perimeter', 'mean area','mean smoothness', 'mean compactness']]
-target_df = pd.Series(data.target)
+selected_features = ['mean radius', 'mean texture', 'mean perimeter', 'mean area','mean smoothness', 'mean compactness']
 
-df.describe()
-
-
-#building simple logistic regression
-X = df[['mean radius', 'mean texture', 'mean perimeter', 'mean area','mean smoothness', 'mean compactness']]
-y = target_df
+X = pd.DataFrame(data.data, columns=data.feature_names)[selected_features]
+y = pd.Series(data.target)
 
 #Fit a model with the default parameters
 gam = LogisticGAM().fit(X, y)
 gam.summary()
 
-# describe each term
-from pygam import generate_X_grid
+from sklearn.metrics import roc_auc_score
+roc_auc_score(y,gam.predict_proba(X)) #0.994173140954495
+gam.accuracy(X, y) #0.9560632688927944
 
-XX = gam.generate_X_grid()
-plt.rcParams['figure.figsize'] = (28, 8)
-fig, axs = plt.subplots(1, len(data.feature_names[0:6]))
-titles = data.feature_names
-for i, ax in enumerate(axs):
-    pdep, confi = gam.partial_dependence(XX, feature=i+1, width=.95)
-    ax.plot(XX[:, i], pdep)
-    ax.plot(XX[:, i], confi[0][:, 0], c='grey', ls='--')
-    ax.plot(XX[:, i], confi[0][:, 1], c='grey', ls='--')
-    ax.set_title(titles[i])plt.show()
-
-
-#my take
+# plot each term
 
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
@@ -48,31 +32,14 @@ from mpl_toolkits import mplot3d
 plt.ion()
 plt.rcParams['figure.figsize'] = (28, 8)
 
-fig, axs = plt.subplots(1, len(data.feature_names[0:6]))
-titles = data.feature_names
+fig, axs = plt.subplots(1, X.shape[1])
+
 for i, ax in enumerate(axs):
-    XX=gam.generate_X_grid(term=i+1, meshgrid=True)
-    pdep, confi = gam.partial_dependence(term=i+1, X=XX, meshgrid=True, width=.95)
-    ax.plot(XX[:, i], pdep)
-    ax.plot(XX[:, i], confi[0][:, 0], c='grey', ls='--')
-    ax.plot(XX[:, i], confi[0][:, 1], c='grey', ls='--')
-    ax.set_title(titles[i])
+    XX=gam.generate_X_grid(term=i, meshgrid=True)
+    pdep, confi = gam.partial_dependence(term=i, X=XX, meshgrid=True, width=.95)
+    ax.plot(XX[0], pdep)
+    ax.plot(XX[0], confi[:, 0], c='grey', ls='--')
+    ax.plot(XX[0], confi[:, 1], c='grey', ls='--')
+    ax.set_title(selected_features[i])
     
 plt.show()
-
-XX
-Z = gam.partial_dependence(term=1, X=XX, meshgrid=True)
-#prev 3d plot
-
-plt.ion()
-plt.rcParams['figure.figsize'] = (12, 8)
-
-XX = gam.generate_X_grid(term=1, meshgrid=True)
-Z = gam.partial_dependence(term=1, X=XX, meshgrid=True)
-
-ax = plt.axes(projection='3d')
-ax.plot_surface(XX[0], XX[1], Z, cmap='viridis')
-
-
-
-
