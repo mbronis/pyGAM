@@ -94,4 +94,53 @@ plt.show()
 
 gam3 = LogisticGAM()
 gam3.gridsearch(X, y)
-gam3.summary
+
+gam3.summary()
+roc_auc_score(y,gam3.predict_proba(X)) #0.9936710533269911
+gam3.accuracy(X, y) #0.9560632688927944
+
+#-----------------------------------------------------
+# Generalizing a GAM
+
+
+import numpy as np
+from sklearn.model_selection import train_test_split
+
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import log_loss
+
+
+# We can split the data just like we usually would:
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=1)
+gam4 = LogisticGAM().gridsearch(X_train, y_train)
+
+predictions = gam4.predict(X_test)
+print("Accuracy: {} ".format(accuracy_score(y_test, predictions)))
+probas = gam4.predict_proba(X_test)      
+print("Log Loss: {} ".format(log_loss(y_test, probas)))
+
+# Accuracy: 0.925531914893617 
+# Log Loss: 0.15704862623168236 
+
+lambda_ = np.logspace(-3,3,3)
+n_splines = [2, 5, 10, 20, 50] 
+constraints = [None,'monotonic_inc','monotonic_dec']
+
+#[‘convex’, ‘concave’, ‘monotonic_inc’, ‘monotonic_dec’,’circular’, ‘none’]
+
+gam5 = LogisticGAM().gridsearch(
+    X_train, y_train,
+    #constraints=constraints, 
+    lam=lambda_,
+    n_splines=n_splines)
+
+gam5.summary()
+
+
+predictions = gam5.predict(X_test)
+print("Accuracy: {} ".format(accuracy_score(y_test, predictions)))
+probas = gam5.predict_proba(X_test)      
+print("Log Loss: {} ".format(log_loss(y_test, probas)))
+
+#Accuracy: 0.9627659574468085 
+#Log Loss: 0.10210410398235806 
