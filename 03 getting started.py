@@ -15,13 +15,14 @@ from mpl_toolkits import mplot3d
 #-----------------------------------------------------
 #load the breast cancer data set
 
-data = load_breast_cancer()
+ds = load_breast_cancer()
 
-#keep first 6 features only
-selected_features = ['mean radius', 'mean texture', 'mean perimeter', 'mean area','mean smoothness', 'mean compactness']
+X, y = ds.data, ds.target
 
-X = pd.DataFrame(data.data, columns=data.feature_names)[selected_features]
-y = pd.Series(data.target)
+#select first 6 features only
+X = X[:,0:6]
+
+selected_features = ds.feature_names[0:6]
 
 #-----------------------------------------------------
 #Fit a model with the default parameters
@@ -91,10 +92,6 @@ plt.show()
 
 #default in pyGAM grid search is lambda space of {'lam':np.logspace(-3,3,11)}
 
-from pygam import s
-
-gam3 = LogisticGAM(s(0)+s(1))
+gam3 = LogisticGAM()
 gam3.gridsearch(X, y)
-
-X
-y
+gam3.summary
