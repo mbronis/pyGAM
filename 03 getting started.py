@@ -144,3 +144,40 @@ print("Log Loss: {} ".format(log_loss(y_test, probas)))
 
 #Accuracy: 0.9627659574468085 
 #Log Loss: 0.10210410398235806 
+
+
+
+#-----------------------------------------------------
+# Regression
+
+import pandas as pd
+import numpy as np
+from pygam import LinearGAM, s
+from sklearn.datasets import load_boston
+
+import matplotlib.pyplot as plt
+from mpl_toolkits import mplot3d
+
+
+boston = load_boston()
+X = pd.DataFrame(boston.data, columns=boston.feature_names)
+y = pd.Series(boston.target)
+
+gam = LinearGAM()
+gam.gridsearch(X.values, y, lam = np.logspace(-10,10,10))
+gam.summary()
+
+plt.ion()
+plt.rcParams['figure.figsize'] = (28, 8)
+
+fig, axs = plt.subplots(1, X.shape[1])
+
+for i, ax in enumerate(axs):
+    XX=gam.generate_X_grid(term=i, meshgrid=True)
+    pdep, confi = gam.partial_dependence(term=i, X=XX, meshgrid=True, width=.95)
+    ax.plot(XX[0], pdep)
+    ax.plot(XX[0], confi[:, 0], c='grey', ls='--')
+    ax.plot(XX[0], confi[:, 1], c='grey', ls='--')
+    ax.set_title(boston.feature_names[i])
+    
+plt.show()
